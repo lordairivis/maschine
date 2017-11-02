@@ -48,11 +48,11 @@ public class Maschine {
 		for(int i = 0; i < sels.length; i++) {
 			try {
 				if (Integer.parseInt(sels[i]) < 1 || Integer.parseInt(sels[i]) > 5) {
-					sels[i] = Integer.toString(1);
+					sels[i] = "1";
 				}
 			}
 			catch (NumberFormatException ex) {
-				sels[i] = Integer.toString(1);
+				sels[i] = "1";
 			}
 		}
 		int rotor1 = Integer.parseInt(sels[0]);
