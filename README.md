@@ -19,3 +19,5 @@ Initial rotor starting positions are indicated by passing a comma-delimited list
 Reflector selection options are 'B' or 'C'.
 
 Plugboard connections are chosen by a comma-delimited listed of letter pairs, such as 'KW'. In this example, any time the message string encounters a K, it will be swapped to a W before the encryption/decryption process occurs.
+
+Currently not in a proper working state.
