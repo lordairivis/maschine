@@ -101,7 +101,6 @@ public class Enigma {
 			
 			output.add(Arrays.asList(this.LETTERS).get(index));
 		}
-		//output = this.addSpaces(output);
 
 		return this.addSpaces(output);
 	}

@@ -8,39 +8,34 @@ import java.util.LinkedList;
 public class Maschine {
 	
 	public static void main(String[] args) {
+		
+		int[] rots = rotors(args[0].toString());
+		int[] ringPosition = rotorPositions(args[1].toString());
+		LinkedList<Rotor> rotors = new LinkedList<Rotor>();
+		for (int i = 0; i < 3; i++) {
+			rotors.add(new Rotor(rots[i], ringPosition[i]));
+		}
+		
+		String ref = args[2].toString();
+		Rotor reflector;
 		try {
-			int[] rots = rotors(args[0].toString());
-			int[] ringPosition = rotorPositions(args[1].toString());
-			LinkedList<Rotor> rotors = new LinkedList<Rotor>();
-			for (int i = 0; i < 3; i++) {
-				rotors.add(new Rotor(rots[i], ringPosition[i]));
-			}
-			
-			String ref = args[2].toString();
-			Rotor reflector;
-			try {
-				reflector = new Rotor(ref.charAt(0));
-			}
-			catch (IndexOutOfBoundsException ex) {
-				reflector = new Rotor('b');
-			}
-			
-			Enigma maschine;
-			Rotor plugboard;
-			try {
-				plugboard = new Rotor(args[3]);
-				maschine = new Enigma(reflector, rotors, plugboard);
-			}
-			catch (StringIndexOutOfBoundsException ex) {
-				maschine = new Enigma(reflector, rotors);
-			}
-			
-			System.out.println(maschine.translate(args[4]));
-			
+			reflector = new Rotor(ref.charAt(0));
 		}
-		catch(Exception ex) {
-			System.out.println("Error: " + ex.toString());
+		catch (IndexOutOfBoundsException ex) {
+			reflector = new Rotor('b');
 		}
+		
+		Enigma maschine;
+		Rotor plugboard;
+		try {
+			plugboard = new Rotor(args[4]);
+			maschine = new Enigma(reflector, rotors, plugboard);
+		}
+		catch (ArrayIndexOutOfBoundsException ex) {
+			maschine = new Enigma(reflector, rotors);
+		}
+		
+		System.out.println(maschine.translate(args[3]));
 	}
 	
 	/**

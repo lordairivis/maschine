@@ -56,7 +56,6 @@ public class Rotor {
 	
 	private void setWiring(int type) {
 		this.wiring = new LinkedList<Integer>();
-		//for (int letter : WIRINGS[type - 1]) {
 		for (int letter : WIRINGS[type]) {
 			this.wiring.add(letter);
 		}
