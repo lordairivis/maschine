@@ -16,9 +16,7 @@ public class Maschine {
 				rotors.add(new Rotor(rots[i], ringPosition[i]));
 			}
 			
-			String[] plugboard = plugboard(args[2]);
-			
-			String ref = args[3].toString();
+			String ref = args[2].toString();
 			Rotor reflector;
 			try {
 				reflector = new Rotor(ref.charAt(0));
@@ -27,7 +25,15 @@ public class Maschine {
 				reflector = new Rotor('b');
 			}
 			
-			Enigma maschine = new Enigma(reflector, rotors, plugboard);
+			Enigma maschine;
+			Rotor plugboard;
+			try {
+				plugboard = new Rotor(args[3]);
+				maschine = new Enigma(reflector, rotors, plugboard);
+			}
+			catch (StringIndexOutOfBoundsException ex) {
+				maschine = new Enigma(reflector, rotors);
+			}
 			
 			System.out.println(maschine.translate(args[4]));
 			
@@ -82,51 +88,5 @@ public class Maschine {
 		int pos2 = Integer.parseInt(sels[1]);
 		int pos3 = Integer.parseInt(sels[2]);
 		return new int[] { pos1, pos2, pos3 };
-	}
-	
-	/**
-	 * Method to determine plugboard configuration
-	 * @param s User provided configuration string of plugboard selections
-	 * @return String array of plugboard configuration
-	 */
-	private static String[] plugboard(String s) {		
-		String[] sels = s.split(",");
-		if (sels.length > 13) {
-			return new String[13];
-		}
-		if (isMatch(sels)) {
-			return new String[13];
-		}
-		else return sels;
-	}
-	
-	/**
-	 * Determine if any plugboard patches match any other plugboard patches
-	 * @param pairs String array of letter pairs selected by plugboard patches
-	 * @return Boolean value of whether there are any letter overlaps
-	 */
-	private static boolean isMatch(String[] pairs) {
-		for (String pair1 : pairs) {
-			if (pair1.charAt(0) == pair1.charAt(1)) return true;
-			for (String pair2 : pairs) {
-				if (pair2.equals(pair1)) continue;
-				else if (isMatch(pair1, pair2)) return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Compare a patch to a second patch
-	 * @param pair1 First letter pair
-	 * @param pair2 Second letter pair
-	 * @return Boolean value whether the letter pairs match or overlap
-	 */
-	private static boolean isMatch(String pair1, String pair2) {
-		if (pair1.charAt(0) == pair2.charAt(0)) return true;
-		else if (pair1.charAt(1) == pair2.charAt(0)) return true;
-		else if (pair1.charAt(0) == pair2.charAt(1)) return true;
-		else if (pair1.charAt(1) == pair2.charAt(1)) return true;
-		else return false;
 	}
 }

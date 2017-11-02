@@ -6,11 +6,12 @@ import java.util.LinkedList;
 public class Enigma {
 	
 	// letter map for translating the "electrical signal" sent through the rotors to a letter.
-	private static final char[] LETTERS = { 'A' ,'B' ,'C' ,'D' ,'E' ,'F' ,'G' ,'H' ,'I' ,'J' ,'K' ,'L' ,'M' ,'N' ,'O' ,'P' ,'Q' ,'R' ,'S' ,'T' ,'U' ,'V' ,'W' ,'X' ,'Y' ,'Z' };
+	private final Character[] LETTERS = { 'A' ,'B' ,'C' ,'D' ,'E' ,'F' ,'G' ,'H' ,'I' ,'J' ,'K' ,'L' ,'M' ,'N' ,'O' ,'P' ,'Q' ,'R' ,'S' ,'T' ,'U' ,'V' ,'W' ,'X' ,'Y' ,'Z' };
 	
 	Rotor reflector;
 	LinkedList<Rotor> rotors;
-	String[] plugboard;
+	Rotor plugboard;
+	boolean usePlugboard;
 	
 	public Rotor getReflector() {
 		return this.reflector;
@@ -20,7 +21,7 @@ public class Enigma {
 		return this.rotors;
 	}
 	
-	public String[] getPlugboard() {
+	public Rotor getPlugboard() {
 		return this.plugboard;
 	}
 	
@@ -32,20 +33,32 @@ public class Enigma {
 		this.rotors = rotors;
 	}
 	
-	private void setPlugboard(String[] plugboard) {
+	private void setPlugboard(Rotor plugboard) {
 		this.plugboard = plugboard;
 	}
 	
 	/**
 	 * Constructor for an Enigma machine
-	 * @param reflector Rotor object which does not rotate  
+	 * @param reflector Rotor object which does not step  
 	 * @param rotors Set of three Rotor objects as defined by user at runtime
-	 * @param plugboard Optional user-defined additional Rotor
+	 * @param plugboard User-defined additional Rotor
 	 */
-	public Enigma(Rotor reflector, LinkedList<Rotor> rotors, String[] plugboard) {
+	public Enigma(Rotor reflector, LinkedList<Rotor> rotors, Rotor plugboard) {
 		setReflector(reflector);
 		setRotors(rotors);
 		setPlugboard(plugboard);
+		this.usePlugboard = true;
+	}
+	
+	/**
+	 * OVerload constructor for an Enigma machine
+	 * @param reflector Rotor object which does not step
+	 * @param rotors Set of three Rotor objects as defined by user at runtime
+	 */
+	public Enigma(Rotor reflector, LinkedList<Rotor> rotors) {
+		setReflector(reflector);
+		setRotors(rotors);
+		this.usePlugboard = false;
 	}
 
 	/**
@@ -54,14 +67,21 @@ public class Enigma {
 	 * @return Encrypted/decrypted message
 	 */
 	public String translate(String message) {
-		String output = new String();
+		LinkedList<Character> output = new LinkedList<Character>();
 		String input = message.replaceAll("[^a-zA-Z]", "").toUpperCase();
 		int index;
 		LinkedList<Integer> wiring;
+		LinkedList<Integer> plugWiring = new LinkedList<Integer>();
+		if (this.usePlugboard) {
+			plugWiring = this.plugboard.getWiring();
+		}
 		for (Character c : input.toCharArray()) {
-			// TODO: make letter swaps according to plugboard
 			
-			index = Arrays.asList(LETTERS).indexOf(c);
+			if (this.usePlugboard && plugWiring.indexOf(Arrays.asList(this.LETTERS).indexOf(c)) != -1) {
+				c = this.LETTERS[plugWiring.indexOf(Arrays.asList(this.LETTERS).indexOf(c))];
+			}
+			
+			index = Arrays.asList(this.LETTERS).indexOf(c);
 			this.stepRotors();
 			for (Rotor rot : this.rotors) {
 				wiring = rot.getWiring();
@@ -74,11 +94,16 @@ public class Enigma {
 				index = wiring.indexOf(index);
 			}
 			index = wiring.get(index);
-			output += Arrays.asList(LETTERS).get(index);
-		}
-		output = this.addSpaces(output);
 
-		return output;
+			if (this.usePlugboard && plugWiring.get(index) != -1) {
+				index = plugWiring.get(index);
+			}
+			
+			output.add(Arrays.asList(this.LETTERS).get(index));
+		}
+		//output = this.addSpaces(output);
+
+		return this.addSpaces(output);
 	}
 	
 	/**
@@ -99,19 +124,18 @@ public class Enigma {
 	
 	/**
 	 * Adds spaces every fourth character to a string
-	 * @param input String to modify
+	 * @param message String to modify
 	 * @return String with spaces inserted every fourth character
 	 */
 	// Properly formatted Enigma messages are groups of 4 letters separated by whitespace
-	private String addSpaces(String input) {
+	private String addSpaces(LinkedList<Character> message) {
 		String output = new String();
-		int length = input.length() + (int) Math.floor(input.length() / 4);
+		int length = message.size();
 		for (int i = 0; i < length; i++) {
-			if (i % 4 == 0) {
-				output += ' '; 
-				i++;
+			if (i > 0 && i % 4 == 0) {
+				output += ' ';
 			}
-			output += input.charAt(i);
+			output += message.pop();
 		}
 		return output;
 	}

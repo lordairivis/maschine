@@ -1,5 +1,6 @@
 // Rotor object class which defines the different rotor types and letter mappings
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Rotor {
@@ -14,14 +15,16 @@ public class Rotor {
 	private static final int[] TYPE_B = { 24, 17, 20, 7, 16, 18, 11, 3, 15, 23, 13, 6, 14, 10, 12, 8, 4, 1, 5, 25, 2, 22, 21, 9, 0, 19 };  // Reflector Type B: YRUHQSLDPXNGOKMIEBFZCWVJAT
 	private static final int[] TYPE_C = { 5, 21, 15, 9, 8, 0, 14, 24, 4, 3, 17, 25, 23, 22, 6, 2, 19, 10, 20, 16, 18, 1, 13, 12, 7, 11 };  // Reflector Type C: FVPJIAOYEDRZXWGCTKUQSBNMHL
 	
+	private final Character[] LETTERS = { 'A' ,'B' ,'C' ,'D' ,'E' ,'F' ,'G' ,'H' ,'I' ,'J' ,'K' ,'L' ,'M' ,'N' ,'O' ,'P' ,'Q' ,'R' ,'S' ,'T' ,'U' ,'V' ,'W' ,'X' ,'Y' ,'Z' };
 	private static final int[][] WIRINGS = { TYPE_1, TYPE_2, TYPE_3, TYPE_4, TYPE_5, TYPE_B, TYPE_C };
 	
 	private int type;  // valid values: 1-7
 	private int ringSetting; // valid values: 1-26
 	private LinkedList<Integer> wiring;
-	private int stepCount;
-	private boolean stepNext;
-	private boolean isReflector;
+	private int stepCount = 0;
+	private boolean stepNext = false;
+	private boolean isReflector = false;
+	private boolean isPlugboard = false;
 	
 	public int getStepCount() {
 		return this.stepCount;
@@ -35,6 +38,14 @@ public class Rotor {
 		return this.wiring;
 	}
 	
+	public boolean isReflector() {
+		return this.isReflector;
+	}
+	
+	public boolean isPlugboard() {
+		return this.isPlugboard;
+	}
+	
 	private void setType(int type) {
 		this.type = type;
 	}
@@ -45,7 +56,15 @@ public class Rotor {
 	
 	private void setWiring(int type) {
 		this.wiring = new LinkedList<Integer>();
-		for (int letter : WIRINGS[type - 1]) {
+		//for (int letter : WIRINGS[type - 1]) {
+		for (int letter : WIRINGS[type]) {
+			this.wiring.add(letter);
+		}
+	}
+	
+	private void setWiring(Integer[] wiring) {
+		this.wiring = new LinkedList<Integer>();
+		for (int letter : wiring) {
 			this.wiring.add(letter);
 		}
 	}
@@ -64,8 +83,6 @@ public class Rotor {
 		this.setWiring(type - 1);
 		this.setRingSetting(ringSetting);
 		this.align();
-		this.stepCount = 0;
-		this.stepNext = false;
 	}
 	
 	/**
@@ -84,6 +101,44 @@ public class Rotor {
 		this.ringSetting = -1;
 		this.stepCount = -1;
 		this.isReflector = true;
+	}
+	
+	/**
+	 * Alternate constructor for creating plugboard-type rotors
+	 * @param connections Selected plugboard connections
+	 */
+	public Rotor(String connections) {
+		String[] selections = connections.split(",");
+		if (!isMatch(selections)) {
+			Integer[] wiring = this.createConnections(selections);
+			this.setWiring(wiring);
+		}
+		this.ringSetting = -1;
+		this.stepCount = -1;
+		this.isPlugboard = true;
+	}
+	
+	/**
+	 * Creates a custom wiring layout based on the plugboard selections
+	 * @param selections Selections provided at runtime
+	 * @return Integer[] array of paired indexes
+	 */
+	private Integer[] createConnections(String[] selections) {
+		for (int i = 0; i < selections.length; i++) {
+			selections[i] = selections[i].toUpperCase();
+		}
+		LinkedList<Integer> connections = new LinkedList<Integer>(Arrays.asList(new Integer[26]));
+		for (int i = 0; i < connections.size(); i++) {
+			connections.set(i, -1);
+		}
+		for (int i = 0; i < selections.length; i++) {
+			// connections should be provided in pairs of letters, i.e. AW, KV, LO, etc.
+			// set the character at the index of the first letter to a number representing the character at the index of the second letter according to the LETTER map
+			// set the character at the index of the second letter to a number representing the character at the index of the first letter according to the LETTER map
+			connections.set(Arrays.asList(this.LETTERS).indexOf(selections[i].charAt(0)), Arrays.asList(this.LETTERS).indexOf(selections[i].charAt(1)));
+			connections.set(Arrays.asList(this.LETTERS).indexOf(selections[i].charAt(1)), Arrays.asList(this.LETTERS).indexOf(selections[i].charAt(0)));
+		}
+		return connections.toArray(new Integer[connections.size()]);
 	}
 	
 	/**
@@ -108,6 +163,36 @@ public class Rotor {
 			head = this.wiring.pop();
 			this.wiring.addLast(head);
 		}
+	}
+	
+	/**
+	 * Determine if any plugboard patches match any other plugboard patches
+	 * @param pairs String array of letter pairs selected by plugboard patches
+	 * @return Boolean value of whether there are any letter overlaps
+	 */
+	private static boolean isMatch(String[] pairs) {
+		for (String pair1 : pairs) {
+			if (pair1.charAt(0) == pair1.charAt(1)) return true;
+			for (String pair2 : pairs) {
+				if (pair2.equals(pair1)) continue;
+				else if (isMatch(pair1, pair2)) return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Compare a patch to a second patch
+	 * @param pair1 First letter pair
+	 * @param pair2 Second letter pair
+	 * @return Boolean value whether the letter pairs match or overlap
+	 */
+	private static boolean isMatch(String pair1, String pair2) {
+		if (pair1.charAt(0) == pair2.charAt(0)) return true;
+		else if (pair1.charAt(1) == pair2.charAt(0)) return true;
+		else if (pair1.charAt(0) == pair2.charAt(1)) return true;
+		else if (pair1.charAt(1) == pair2.charAt(1)) return true;
+		else return false;
 	}
 	
 	/**
