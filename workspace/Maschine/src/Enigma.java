@@ -11,7 +11,7 @@ public class Enigma {
 	Rotor reflector;
 	LinkedList<Rotor> rotors;
 	Rotor plugboard;
-	boolean usePlugboard;
+	boolean usePlugboard = false;
 	
 	public Rotor getReflector() {
 		return this.reflector;
@@ -58,7 +58,6 @@ public class Enigma {
 	public Enigma(Rotor reflector, LinkedList<Rotor> rotors) {
 		setReflector(reflector);
 		setRotors(rotors);
-		this.usePlugboard = false;
 	}
 
 	/**
